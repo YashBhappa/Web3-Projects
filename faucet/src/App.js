@@ -19,12 +19,26 @@ function App() {
 
   const reloadEffect = useCallback(() => reload(!shouldReload), [shouldReload])
 
+  const setAccountListener = provider => {
+    provider.on("accountsChanged", _ => window.location.reload())
+
+
+    // provider._jsonRpcConnection.events.on("notification", payload => {
+    //   const { method } = payload
+
+    //   if (method === "metamask_unlockStateChanged") {
+    //     setAccount(null)
+    //   }
+    // })
+  }
+
   useEffect(() => {
     const loadProvider = async () => {
       const provider = await detectEthereumProvider()
       const contract = await loadContract("Faucet", provider)
 
       if (provider) {
+        setAccountListener(provider)
         setWeb3Api({
           web3: new Web3(provider),
           provider,
@@ -64,7 +78,6 @@ function App() {
       value: web3.utils.toWei("1", "ether")
     })
 
-    // window.location.reload()
     reloadEffect()
   }, [web3Api, account, reloadEffect])
 
@@ -101,11 +114,13 @@ function App() {
             Current Balance: <strong>{balance}</strong> ETH
           </div>
           <button
+            disabled={!account}
             onClick={addFunds}
             className="button is-link mr-2">
               Donate 1eth
             </button>
           <button
+            disabled={!account}
             onClick={withdraw}
             className="button is-primary">Withdraw</button>
         </div>
