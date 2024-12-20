@@ -18,10 +18,12 @@ function App() {
   const [account, setAccount] = useState(null)
   const [shouldReload, reload] = useState(false)
 
+  const canConnectToContract = account && web3Api.contract
   const reloadEffect = useCallback(() => reload(!shouldReload), [shouldReload])
 
   const setAccountListener = provider => {
     provider.on("accountsChanged", _ => window.location.reload())
+    provider.on("chainChanged", _ => window.location.reload())
   }
 
   useEffect(() => {
@@ -38,7 +40,7 @@ function App() {
           isProviderLoaded: true
         })
       } else {
-        setWeb3Api({...web3Api, isProviderLoaded: true})
+        setWeb3Api(api => ({...api, isProviderLoaded: true}))
         console.error("Please, install Metamask.")
       }
     }
@@ -99,7 +101,10 @@ function App() {
                   <>
                     <div className="notification is-warning is-size-6 is-rounded">
                       Wallet is not detected!{` `}
-                      <a target="_blank" href="https://docs.metamask.io">
+                      <a
+                        rel="noreferrer"
+                        target="_blank"
+                        href="https://docs.metamask.io">
                         Install Metamask
                       </a>
                     </div>
@@ -119,16 +124,21 @@ function App() {
           <div className="balance-view is-size-2 my-4">
             Current Balance: <strong>{balance}</strong> ETH
           </div>
+          { !canConnectToContract &&
+            <i className="is-block">
+              Connect to Ganache
+            </i>
+          }
           <button
-            disabled={!account}
+            disabled={!canConnectToContract}
             onClick={addFunds}
             className="button is-link mr-2">
-              Donate 1eth
+              Donate 1 eth
             </button>
           <button
-            disabled={!account}
+            disabled={!canConnectToContract}
             onClick={withdraw}
-            className="button is-primary">Withdraw</button>
+            className="button is-primary">Withdraw 0.1 eth</button>
         </div>
       </div>
     </>
