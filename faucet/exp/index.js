@@ -20,7 +20,7 @@
 // 94 9cbfd6ebdb9cfcccd6b043f43e524583486d455e - to
 
 // 0x88 - 0x80 = 8bytes
-// 88 0490283b23ec8f76 - to
+// 88 0490283b23ec8f76 - value
 
 // 80 - data
 
