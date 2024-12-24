@@ -4,7 +4,7 @@ import { CourseCard, CourseList } from "@components/ui/course"
 import { BaseLayout } from "@components/ui/layout"
 import { getAllCourses } from "@content/courses/fetcher"
 import { EthRates, WalletBar } from "@components/ui/web3"
-import { useAccount, useNetwork } from "@components/hooks/web3"
+import { useWalletInfo } from "@components/hooks/web3"
 import { Button } from "@components/ui/common"
 import { OrderModal } from "@components/ui/order"
 import { useState } from "react"
@@ -12,9 +12,8 @@ import { useEthPrice } from "@components/hooks/useEthPrice"
 
 export default function Marketplace({courses}) {
   const [selectedCourse, setSelectedCourse] = useState(null)
-  const { account } = useAccount()
-  const { network } = useNetwork()
-  const { eth, perItem } = useEthPrice()
+  const { account, network, canPurchaseCourse } = useWalletInfo()
+  const { eth } = useEthPrice()
 
   return (
     <>
@@ -40,10 +39,12 @@ export default function Marketplace({courses}) {
         <CourseCard
           key={course.id}
           course={course}
+          disabled={!canPurchaseCourse}
           Footer={() =>
             <div className="mt-4">
               <Button
                 onClick={() => setSelectedCourse(course)}
+                disabled={!canPurchaseCourse}
                 variant="lightPurple">
                 Purchase
               </Button>
