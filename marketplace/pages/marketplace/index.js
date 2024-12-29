@@ -9,6 +9,7 @@ import { OrderModal } from "@components/ui/order"
 import { useState } from "react"
 import { MarketHeader } from "@components/ui/marketplace"
 import { useWeb3 } from "@components/providers"
+import { withToast } from "@utils/toast"
 
 export default function Marketplace({courses}) {
   const { web3, contract, requireInstall } = useWeb3()
@@ -34,9 +35,9 @@ export default function Marketplace({courses}) {
         { type: "bytes32", value: orderHash }
       )
 
-      _purchaseCourse(hexCourseId, proof, value)
+      withToast(_purchaseCourse(hexCourseId, proof, value))
     } else {
-      _repurchaseCourse(orderHash, value)
+      withToast(_repurchaseCourse(orderHash, value))
     }
   }
 
@@ -46,9 +47,10 @@ export default function Marketplace({courses}) {
         hexCourseId,
         proof
       ).send({from: account.data, value})
-      console.log(result)
-    } catch {
-      console.error("Purchase course: Operation has failed.")
+
+      return result
+    } catch(error) {
+      throw new Error(error.message)
     }
   }
 
@@ -57,9 +59,10 @@ export default function Marketplace({courses}) {
       const result = await contract.methods.repurchaseCourse(
         courseHash
       ).send({from: account.data, value})
-      console.log(result)
-    } catch {
-      console.error("Purchase course: Operation has failed.")
+
+      return result
+    } catch(error) {
+      throw new Error(error.message)
     }
   }
 
