@@ -16,10 +16,12 @@ const HARDHAT_NETWORK_ID = Number(process.env.REACT_APP_NETWORK_ID);
 function Dapp() {
   const [pets, setPets] = useState([]);
   const [adoptedPets, setAdoptedPets] = useState([]);
+  const [ownedPets, setOwnedPets] = useState([]);
   const [selectedAddress, setSelectedAddress] = useState(undefined);
   const [contract, setContract] = useState(undefined);
   const [txError, setTxError] = useState(undefined);
   const [txInfo, setTxInfo] = useState(undefined);
+  const [view, setView] = useState("home");
 
   useEffect(() => {
     async function fetchPets() {
@@ -41,10 +43,12 @@ function Dapp() {
       window.ethereum.on("accountsChanged", ([newAddress]) => {
         if (newAddress === undefined) {
           setAdoptedPets([]);
+          setOwnedPets([]);
           setSelectedAddress(undefined);
           setContract(undefined);
           setTxError(undefined);
           setTxInfo(undefined);
+          setView("home");
           return;
         }
         
@@ -78,11 +82,18 @@ function Dapp() {
   async function getAdoptedPets(contract) {
     try {
       const adoptedPets = await contract.getAllAdoptedPets();
+      const ownedPets = await contract.getAllAdoptedPetsByOnwer();
 
       if (adoptedPets.length > 0) {
         setAdoptedPets(adoptedPets.map(petIdx => Number(petIdx)));
       } else {
         setAdoptedPets([]);
+      }
+
+      if (ownedPets.length > 0) {
+        setOwnedPets(ownedPets.map(petIdx => Number(petIdx)));
+      } else {
+        setOwnedPets([]);
       }
     } catch(e) {
       console.error(e.message);
@@ -102,6 +113,7 @@ function Dapp() {
       }
 
       setAdoptedPets([...adoptedPets, id]);
+      setOwnedPets([...ownedPets, id]);
     } catch(e) {
       setTxError(e?.reason);
     } finally {
@@ -148,16 +160,32 @@ function Dapp() {
         />
       }
       <br />
-      <Navbar address={selectedAddress} />
+      <Navbar 
+        setView={setView}
+        address={selectedAddress} 
+      />
       <div className="items">
-        { pets.map((pet) =>
-          <PetItem 
-            key={pet.id} 
-            pet={pet} 
-            disabled={adoptedPets.includes(pet.id)}
-            adoptPet={() => adoptPet(pet.id)}
-          />
-        )}
+        { view === "home" ?
+          pets.map((pet) =>
+            <PetItem 
+              key={pet.id} 
+              pet={pet} 
+              inProgress={!!txInfo}
+              disabled={adoptedPets.includes(pet.id)}
+              adoptPet={() => adoptPet(pet.id)}
+            />
+          ) :
+          pets
+            .filter(pet => ownedPets.includes(pet.id))
+            .map((pet) =>
+            <PetItem 
+              key={pet.id} 
+              pet={pet} 
+              disabled={true}
+              adoptPet={() => {}}
+            />
+          )
+        }
       </div>
     </div>
   );
